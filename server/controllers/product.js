@@ -138,11 +138,22 @@ const ratingProduct = asyncHandler(async(req, res) => {
     return res.status(200).json({status: true , updatedProduct})
 })
 
+const uploadImageProduct = asyncHandler(async(req, res) => {
+    const {pid} = req.params
+    if(!req.files) throw new Error('Missing files')
+    const response = await Product.findByIdAndUpdate(pid, {$push: {images: {$each: req.files.map(el => el.path)}}}, {new: true})
+    return res.status(200).json({
+        success: response ? true : false,
+        response: response ? response : 'cannot put file into cloud storage'
+    })
+})
+
 module.exports = {
     createProduct,
     detailProduct,
     getAllProduct,
     updateProduct,
     deleteProduct,
-    ratingProduct
+    ratingProduct,
+    uploadImageProduct,
 }

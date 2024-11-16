@@ -47,13 +47,17 @@ const login = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email });
   if (user && (await user.comparePassword(password))) {
     // tách password và role ra khỏi response
-    const { role, password, refreshToken,...userData } = user.toObject();
+    const { role, password, refreshToken, ...userData } = user.toObject();
     // tạo access Token
     const accessToken = generateAccessToken(user._id, role);
     // tạo refresh token
     const newRefreshToken = generateRefreshToken(user._id);
     // lưu refresh token vào database
-    await User.findByIdAndUpdate(user._id, { refreshToken: newRefreshToken }, { new: true });
+    await User.findByIdAndUpdate(
+      user._id,
+      { refreshToken: newRefreshToken },
+      { new: true }
+    );
     // lưu refresh token vào cookie
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
@@ -144,14 +148,17 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
 const resetPassword = asyncHandler(async (req, res) => {
   const { password, resetToken } = req.body;
-  if(!password) throw new Error("Password is required");
-  if(!resetToken) throw new Error("Reset token is required");
+  if (!password) throw new Error("Password is required");
+  if (!resetToken) throw new Error("Reset token is required");
   const passwordResetToken = crypto
-  .createHash('sha256')
-  .update(resetToken)
-  .digest('hex');
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
 
-  const user = await User.findOne({ passwordResetToken, passwordResetExpires: { $gt: Date.now() } });
+  const user = await User.findOne({
+    passwordResetToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
   if (!user) throw new Error("User not found");
 
   user.password = password;
@@ -166,48 +173,118 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 // lấy tất cả user (quyền admin)
-const getUsers = asyncHandler(async (req,res) => {
-  const response = await User.find().select(
-    "-refreshToken -password -role"
-  );
+const getUsers = asyncHandler(async (req, res) => {
+  const response = await User.find().select("-refreshToken -password -role");
   return res.status(200).json({
     success: response ? true : false,
-    users: response
-  })
-})
+    users: response,
+  });
+});
 
 // Xóa 1 user dựa trên id
 const deleteUserById = asyncHandler(async (req, res) => {
-  const {_id} = req.query
-  if(!_id) throw new Error("Can't find id")
-  const response = await User.findByIdAndDelete(_id)
+  const { _id } = req.query;
+  if (!_id) throw new Error("Can't find id");
+  const response = await User.findByIdAndDelete(_id);
   return res.status(200).json({
     success: response ? true : false,
-    deletedUser: response ? `User with email: ${response.email} has been deleted` : "no user deleted"
-  })
-}) 
+    deletedUser: response
+      ? `User with email: ${response.email} has been deleted`
+      : "no user deleted",
+  });
+});
 
 // Cập nhật 1 user dựa trên id
 const updateUserById = asyncHandler(async (req, res) => {
-  const {_id} = req.user
-  if(!_id || Object.keys(req.body).length === 0) throw new Error("Can't find id")
-  const update = await User.findByIdAndUpdate(_id, req.body,{new: true}).select("-password -role -refreshToken")
+  const { _id } = req.user;
+  if (!_id || Object.keys(req.body).length === 0)
+    throw new Error("Can't find id");
+  const update = await User.findByIdAndUpdate(_id, req.body, {
+    new: true,
+  }).select("-password -role -refreshToken");
   return res.status(200).json({
     success: update ? true : false,
-    UPdatedUser: update ? update : "Failed to update"
-  })
-})
+    UPdatedUser: update ? update : "Failed to update",
+  });
+});
 
 // Cập nhật 1 user quyền ADMIN
 const updateUserByAdmin = asyncHandler(async (req, res) => {
-  const {uid} = req.params
-  if(!uid || Object.keys(req.body).length === 0) throw new Error("Can't find id")
-  const update = await User.findByIdAndUpdate(uid, req.body,{new: true}).select("-password -role -refreshToken")
+  const { uid } = req.params;
+  if (!uid || Object.keys(req.body).length === 0)
+    throw new Error("Can't find id");
+  const update = await User.findByIdAndUpdate(uid, req.body, {
+    new: true,
+  }).select("-password -role -refreshToken");
   return res.status(200).json({
     success: update ? true : false,
-    UPdatedUser: update ? update : "Failed to update"
-  })
-})
+    UPdatedUser: update ? update : "Failed to update",
+  });
+});
+
+// update address user, 1 user có thể có nhiều address
+const updateUserAddress = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  if (!req.body.address) throw new Error("Missing address input");
+  const newAddress = req.body.address; // address mà người dùng gửi lên
+  const user = await User.findById(_id);
+  if (user.address.includes(newAddress)) {
+    return res
+      .status(400)
+      .json({ msg: "Duplicate address, please enter another address" });
+  }
+  const updateAddress = await User.findByIdAndUpdate(
+    _id,
+    { $push: { address: req.body.address } },
+    { new: true }
+  ).select("-password -role -refreshToken");
+  return res.status(200).json({
+    success: updateAddress ? true : false,
+    UPdatedUser: updateAddress
+      ? updateAddress
+      : "Failed to update user's address",
+  });
+});
+
+// update User's cart
+const updateCartUser = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  const { pid, quantity, color } = req.body;
+  if (!pid || !quantity || !color) throw new Error("missing inputs");
+  const user = await User.findById(_id).select("cart");
+  const alreadyProduct = user?.cart?.find(
+    (el) => el.product.toString() === pid
+  );
+  if (alreadyProduct) {
+    if (alreadyProduct.color === color) {
+      const response = await User.updateOne({cart: {$elemMatch: alreadyProduct}}, {$set: {"cart.$.quantity":quantity}}, {new: true})
+      return res.status(200).json({
+        success: response ? true: false,
+        response: response ? response : "something went wrong"
+      })
+    } else {
+      const response = await User.findByIdAndUpdate(
+        _id,
+        { $push: { cart: { product: pid, quantity, color } } },
+        { new: true }
+      );
+      return res.status(200).json({
+        success: response ? true : false,
+        response: response ? response : "cannot update user's cart",
+      });
+    }
+  } else {
+    const response = await User.findByIdAndUpdate(
+      _id,
+      { $push: { cart: { product: pid, quantity, color } } },
+      { new: true }
+    );
+    return res.status(200).json({
+      success: response ? true : false,
+      response: response ? response : "cannot update user's cart",
+    });
+  }
+});
 
 module.exports = {
   register,
@@ -220,5 +297,7 @@ module.exports = {
   getUsers,
   deleteUserById,
   updateUserById,
-  updateUserByAdmin
+  updateUserByAdmin,
+  updateUserAddress,
+  updateCartUser,
 };

@@ -8,11 +8,11 @@ var productSchema = new mongoose.Schema({
     },
     slug:{ // dong-ho-thong-minh
         type:String,
-        unique:true,
+        // unique:true,
         lowercase: true
     },
     description:{
-        type:String,
+        type:Array,
         required:true,
     },
     brand:{
@@ -24,15 +24,15 @@ var productSchema = new mongoose.Schema({
         required:true,
     },
     category:{ // thuộc danh mục nào ?
-        type: mongoose.Types.ObjectId,
-        ref: 'Category'
+        type:String,
+        required:true,
     },
     quantity:{ // số lượng
-        type:Number,
+        type: Number,
         default : 0,
     },
     sold:{ // số mặt hàng đã bán
-        type:Number,
+        type: Number,
         default: 0,
     },
     images: {
@@ -40,7 +40,7 @@ var productSchema = new mongoose.Schema({
     },
     color: {
         type: String,
-        enum: ['Black', 'Grown', 'Red']
+        required: true,
     },
     ratings: [
         {

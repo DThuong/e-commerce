@@ -31,3 +31,5 @@ const data = [
     brand: ["Samsung", "Acer", "Asus", "Lenovo", "Haier"],
   },
 ];
+
+module.exports = data

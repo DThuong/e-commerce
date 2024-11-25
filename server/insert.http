@@ -1,0 +1,5 @@
+### insert product data
+POST http://localhost:3000/api/insert/
+
+### insert product category data
+POST http://localhost:3000/api/insert/cate

@@ -1,8 +1,6 @@
 const asyncHandler = require("express-async-handler")
 const Product = require("../models/product")
 const slugify = require("slugify")
-const product = require("../models/product")
-const { json } = require("express")
 
 // Tạo 1 sản phẩm mới
 const createProduct = asyncHandler(async(req,res) => {

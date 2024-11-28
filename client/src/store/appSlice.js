@@ -7,27 +7,34 @@ export const appSlice = createSlice({
     categories: null,
     isLoading: false
   },
-  reducers: {},
+  reducers: {
+    // logout: (state) => {
+    //     state.isLoading = false
+    // }
+  },
   // Code logic xử lý async action
   extraReducers: (builder) => {
-    // Bắt đầu thực hiện action login (Promise pending)
-    // builder.addCase(login.pending, (state) => {
-    //   // Bật trạng thái loading
-    //   state.isLoading = true;
-    // });
-
-    // Khi thực hiện action login thành công (Promise fulfilled)
-    builder.addCase(actions.getCategory, (state, action) => {
-      // Tắt trạng thái loading, lưu thông tin user vào store
-      state.isLoading = false;
-      state.categories = action.payload.category;
-    });
-
-    // Khi thực hiện action login thất bại (Promise rejected)
-    builder.addCase(actions.getCategory, (state, action) => {
-      // Tắt trạng thái loading, lưu thông báo lỗi vào store
-      state.isLoading = false;
-      state.errorMessage = action.payload.message;
-    });
-  },
+    builder
+      // When the action is pending
+      .addCase(actions.getCategory.pending, (state) => {
+        state.isLoading = true;
+        state.errorMessage = null; // Clear any previous error
+      })
+      // When the action is fulfilled
+      .addCase(actions.getCategory.fulfilled, (state, action) => {
+        console.log(action)
+        state.isLoading = false;
+        state.categories = action.payload;
+      })
+      // When the action is rejected
+      .addCase(actions.getCategory.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errorMessage = action.payload.message || "Failed to fetch categories";
+      });
+  }
 });
+
+// Action creators are generated for each case reducer function
+export const { } = appSlice.actions
+
+export default appSlice.reducer

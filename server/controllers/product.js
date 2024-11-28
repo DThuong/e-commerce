@@ -54,7 +54,7 @@ const getAllProduct = asyncHandler(async(req, res) => {
     // Pagination
     // page=2&limit=10, 1-10 page 1, 11-20 page 2, 21-30 page 3
     const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 2;
+    const limit = req.query.limit * 1 || process.env.LIMIT_PRODUCTS || 10;
     const skip = (page - 1) * limit;
     queryCommand = queryCommand.skip(skip).limit(limit);
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { apiGetCategory } from "../apis/app";
+// import { apiGetCategory } from "../apis/app";
 import { NavLink } from "react-router-dom";
 import { createSlug } from "../utils/helpers";
 import { useSelector } from "react-redux";

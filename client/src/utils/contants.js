@@ -14,15 +14,5 @@ export const navigation = [
         id: 3,
         value: 'BLOGS',
         path: `/${path.BLOGS}`
-    },
-    {
-        id: 4,
-        value: 'OUR_SERVICES',
-        path: `/${path.OUR_SERVICES}`
-    },
-    {
-        id: 5,
-        value: 'FAQS',
-        path: `/${path.FAQS}`
-    },
+    }
 ]

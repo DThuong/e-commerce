@@ -8,9 +8,9 @@ export const appSlice = createSlice({
     isLoading: false
   },
   reducers: {
-    // logout: (state) => {
-    //     state.isLoading = false
-    // }
+    logout: (state) => {
+        state.isLoading = false
+    }
   },
   // Code logic xử lý async action
   extraReducers: (builder) => {
@@ -35,6 +35,6 @@ export const appSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { } = appSlice.actions
+// export const { } = appSlice.actions
 
 export default appSlice.reducer

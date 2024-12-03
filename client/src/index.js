@@ -4,6 +4,8 @@ import { Provider } from 'react-redux';
 import { store } from './store/redux';
 import './index.css';
 import { BrowserRouter } from 'react-router-dom';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import App from './App'
 
 const container = document.getElementById('root');

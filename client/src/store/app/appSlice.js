@@ -22,7 +22,6 @@ export const appSlice = createSlice({
       })
       // When the action is fulfilled
       .addCase(actions.getCategory.fulfilled, (state, action) => {
-        console.log(action)
         state.isLoading = false;
         state.categories = action.payload;
       })

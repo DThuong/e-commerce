@@ -10,11 +10,33 @@ const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../utils/sendMail");
 
 const crypto = require("crypto");
+const makeToken = require("uniqid");
 
 // Đăng ký
+// const register = asyncHandler(async (req, res) => {
+//   const { firstname, lastname, email, password } = req.body;
+//   if (!firstname || !lastname || !email || !password) {
+//     return res.status(400).json({
+//       success: false,
+//       msg: "Please enter all fields",
+//     });
+//   }
+//   const user = await User.findOne({ email });
+//   if (user) throw new Error("User already exists");
+//   else {
+//     const createUser = await User.create(req.body);
+//     return res.status(200).json({
+//       success: createUser ? true : false,
+//       msg: createUser
+//         ? "Create user successfully, PLease go Login~"
+//         : "Create user failed",
+//     });
+//   }
+// });
+
 const register = asyncHandler(async (req, res) => {
-  const { firstname, lastname, email, password } = req.body;
-  if (!firstname || !lastname || !email || !password) {
+  const { firstname, lastname, email, password, mobile } = req.body;
+  if (!firstname || !lastname || !email || !password || !mobile) {
     return res.status(400).json({
       success: false,
       msg: "Please enter all fields",
@@ -23,14 +45,40 @@ const register = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email });
   if (user) throw new Error("User already exists");
   else {
-    const createUser = await User.create(req.body);
-    return res.status(200).json({
-      success: createUser ? true : false,
-      msg: createUser
-        ? "Create user successfully, PLease go Login~"
-        : "Create user failed",
+    const token = makeToken();
+    res.cookie(
+      "dataregister",
+      { ...req.body, token },
+      { httpOnly: true, maxAge: 15 * 60 * 1000 }
+    );
+    const html = `Vui lòng click vào link dưới đây để hoàn tất quá trình đăng ký, Link này sẽ hết hạn sau 15 phút: 
+    <a href="${process.env.SERVER_URL}/api/user/finalregister/${token}">Click here</a>`;
+    await sendEmail({email, html, subject: "Hoàn tất đăng ký tài khoản e-commerce"});
+    return res.json({
+      success: true,
+      msg: "Please check email to active your account",
     });
   }
+});
+
+const finalregister = asyncHandler(async (req, res) => {
+  const cookie = req.cookies;
+  const { token } = req.params;
+  if (!cookie?.dataregister || cookie.dataregister.token !== token) {
+    res.clearCookie('dataregister')
+    return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`);
+  }
+  const { email, password, firstname, lastname, mobile } = cookie?.dataregister;
+  const createUser = await User.create({
+    email,
+    password,
+    firstname,
+    lastname,
+    mobile,
+  });
+  res.clearCookie('dataregister')
+  if (createUser) return res.redirect(`${process.env.CLIENT_URL}/finalregister/success`);
+  else return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`);
 });
 
 // refresh token: cấp mới access token
@@ -128,31 +176,37 @@ const logOut = asyncHandler(async (req, res) => {
 // change password
 
 const forgotPassword = asyncHandler(async (req, res) => {
-  const { email } = req.query;
+  const { email } = req.body;
   if (!email) throw new Error("Email is required");
   const user = await User.findOne({ email });
   if (!user) throw new Error("User not found");
   const resetToken = await user.generatePasswordResetToken(); // lưu token vào db
   await user.save();
 
-  const resetURL = `http://localhost:3000/reset-password/${resetToken}`;
+  const resetURL = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
   const html = `Vui lòng click vào link dưới đây để thay đổi mật khẩu của bạn, Link này sẽ hết hạn sau 15 phút: <a href="${resetURL}">Click here</a>`;
 
-  const result = await sendEmail(email, html);
+  const data = {
+    email,
+    html,
+    subject: "Forgot password",
+  };
+
+  const result = await sendEmail(data);
   return res.status(200).json({
-    success: result ? true : false,
-    result,
+    success: result.response?.includes('OK') ? true : false,
+    msg: result.response?.includes('OK') ? 'Hãy check mail của bạn' : 'Đã có lỗi, hãy thử lại sau !!!',
   });
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
-  const { password, resetToken } = req.body;
+  const { password, token } = req.body;
   if (!password) throw new Error("Password is required");
-  if (!resetToken) throw new Error("Reset token is required");
+  if (!token) throw new Error("Reset token is required");
   const passwordResetToken = crypto
     .createHash("sha256")
-    .update(resetToken)
+    .update(token)
     .digest("hex");
 
   const user = await User.findOne({
@@ -257,11 +311,15 @@ const updateCartUser = asyncHandler(async (req, res) => {
   );
   if (alreadyProduct) {
     if (alreadyProduct.color === color) {
-      const response = await User.updateOne({cart: {$elemMatch: alreadyProduct}}, {$set: {"cart.$.quantity":quantity}}, {new: true})
+      const response = await User.updateOne(
+        { cart: { $elemMatch: alreadyProduct } },
+        { $set: { "cart.$.quantity": quantity } },
+        { new: true }
+      );
       return res.status(200).json({
-        success: response ? true: false,
-        response: response ? response : "something went wrong"
-      })
+        success: response ? true : false,
+        response: response ? response : "something went wrong",
+      });
     } else {
       const response = await User.findByIdAndUpdate(
         _id,
@@ -300,4 +358,5 @@ module.exports = {
   updateUserByAdmin,
   updateUserAddress,
   updateCartUser,
+  finalregister,
 };

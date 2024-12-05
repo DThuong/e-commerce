@@ -13,6 +13,7 @@ app.use(express.urlencoded({ extended: true })); // đọc hiểu dữ liệu d�
 app.use(cors({
     origin: process.env.CLIENT_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
 }))
 
 app.use(cookieParser()); // đọc cookie

@@ -13,8 +13,8 @@ const crypto = require("crypto");
 
 // Đăng ký
 const register = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
-  if (!firstName || !lastName || !email || !password) {
+  const { firstname, lastname, email, password } = req.body;
+  if (!firstname || !lastname || !email || !password) {
     return res.status(400).json({
       success: false,
       msg: "Please enter all fields",

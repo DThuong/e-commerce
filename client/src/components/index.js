@@ -7,4 +7,6 @@ export {default as Product} from './Product'
 export {default as SelectOptions} from './SelectOptions'
 export {default as TopHeader} from './TopHeader'
 export {default as Footer} from './Footer'
+export {default as InputFields} from './InputFields'
+export {default as Button} from './Button'
 

@@ -6,6 +6,7 @@ const categoryData = require("../../data/cate_brand")
 const ProductCategory = require("../models/productCategory");
 
 const fn = async (product) => {
+  if (!product?.images || product.images.length === 0) return; // Bỏ qua sản phẩm không có hình ảnh
   const colorVariant = product?.variants.find((el) => el.label === "Color");
   const color = colorVariant?.variants[0] || "Default Color";
   let slug = slugify(product?.name);
@@ -25,6 +26,8 @@ const fn = async (product) => {
     sold: Math.round(Math.random() * 100),
     images: product?.images,
     color: color,
+    thumb: product?.thumb,
+    totalRating: Math.round(Math.random() * 5)
   });
 };
 const insertProduct = asyncHandler(async (req, res) => {

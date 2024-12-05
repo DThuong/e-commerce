@@ -5,7 +5,7 @@ const TopHeader = () => {
   return (
     <div className='h-[38px] w-full bg-main flex items-center justify-center'>
         <div className='w-main flex items-center justify-center text-xs text-white'>
-            <Link to = {`${path.LOGIN}`}>Sign In or create account</Link>
+            <Link to = {`${path.LOGIN}`} className='hover:text-gray-800'>Sign In or create account</Link>
         </div>
     </div>
   )

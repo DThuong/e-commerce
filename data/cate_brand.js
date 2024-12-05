@@ -30,6 +30,14 @@ const data = [
     cate: "Printer",
     brand: ["Samsung", "Acer", "Asus", "Lenovo", "Haier"],
   },
+  {
+    cate: "Speaker",
+    brand: ["Samsung"],
+  },
+  {
+    cate: "Camera",
+    brand: ["Apple"],
+  },
 ];
 
-module.exports = data
+module.exports = data;

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React from "react";
 import { formatNumber, renderStar } from "../utils/helpers";
 import icons from "../utils/icons";
 import SelectOptions from "./SelectOptions"
@@ -8,7 +8,6 @@ import path from "../utils/path";
 const {MdOutlineMenu,MdRemoveRedEye,FaRegHeart} = icons
 
 const Product = ({ product }) => {
-  const {IsShowOption, setIsShowOption} = useState(null)
   return (
     <div className="w-full text-base px-[10px]">
       <Link className="w-full border p-[15px] flex flex-col items-center relative group" to={`/${path.DETAIL_PRODUCT}/${product?._id}/${product?.title}`}>

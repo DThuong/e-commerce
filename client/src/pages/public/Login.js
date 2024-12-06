@@ -1,157 +1,256 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { InputFields, Button } from "../../components";
 import { apiRegister, apiLogin, apiForgotPassword } from "../../apis/user";
-import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import path from "../../utils/path";
-import { register } from "../../store/user/userSlice";
 import { useDispatch } from "react-redux";
-import {toast} from 'react-toastify'
+import { login } from "../../store/user/userSlice";
+import * as Yup from "yup";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import Swal from "sweetalert2";
+import { toast } from "react-toastify";
+import { TailSpin } from "react-loader-spinner";
+
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [payload, setPayload] = useState({
-    email: "",
-    password: "",
-    firstname: "",
-    lastname: "",
-    mobile: "",
-  });
-  const [Register, setRegister] = useState(false);
+  const [isRegister, setIsRegister] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const resetPayload = () => {
-    setPayload({
-      email: "",
-      password: "",
-      firstname: "",
-      lastname: "",
-      mobile: "",
-    });
-  };
-  const [email, setEmail] = useState("");
-  const handleForgotPassword = async () => {
-    const res = await apiForgotPassword({ email });
-    if(res.success){
-      toast.success(res.msg, { theme: 'colored'});
-    }else{
-      toast.info(res.msg, { theme: 'colored'});
-    }
-  };
-  const handleSubmit = useCallback(async () => {
-    const { firstName, lastName, mobile, ...data } = payload;
-    if (Register) {
-      const res = await apiRegister(payload);
+  const [isLoading, setIsLoading] = useState(false); // Trạng thái loading
+
+  // Schema validation
+  const loginSchema = Yup.object().shape({
+    email: Yup.string()
+      .email("Invalid email format")
+      .required("Email is required"),
+    password: Yup.string().required("Password is required"),
+  });
+
+  const registerSchema = Yup.object().shape({
+    firstname: Yup.string().required("First Name is required"),
+    lastname: Yup.string().required("Last Name is required"),
+    mobile: Yup.string().required("Mobile is required"),
+    email: Yup.string()
+      .email("Invalid email format")
+      .required("Email is required"),
+    password: Yup.string().required("Password is required"),
+  });
+
+  // Handle submission
+  const handleSubmit = async (values) => {
+    setIsLoading(true); // Bật trạng thái loading
+    if (isRegister) {
+      const res = await apiRegister(values);
       if (res.success) {
         Swal.fire("Congratulation", res.msg, "success").then(() => {
-          setRegister(false);
-          resetPayload();
+          setIsRegister(false);
         });
       } else {
         Swal.fire("Oops", res.msg, "error");
       }
     } else {
-      const res = await apiLogin(payload);
+      const res = await apiLogin(values);
       if (res.success) {
         dispatch(
-          register({
+          login({
             isLoggedIn: true,
             token: res.accessToken,
             userData: res.userData,
           })
         );
-        navigate(`/${path.HOME}`);
-      } else Swal.fire("Oops", res.msg, "error");
+        navigate("/");
+      } else {
+        Swal.fire("Oops", res.msg, "error");
+      }
     }
-  }, [payload, Register]);
+    setIsLoading(false); // Tắt trạng thái loading
+  };
+
+  const handleForgotPassword = async (values) => {
+    const res = await apiForgotPassword({ email: values.email });
+    if (res.success) {
+      toast.success(res.msg, { theme: "colored" });
+    } else {
+      toast.info(res.msg, { theme: "colored" });
+    }
+  };
+
   return (
     <div className="w-screen h-screen relative">
       {isForgotPassword && (
         <div className="absolute top-0 right-0 left-0 bottom-0 bg-white flex justify-center py-8 z-50 animate-slide-right">
-          <div className="flex flex-col gap-4">
-            <label htmlFor="email">Enter your email: </label>
-            <input
-              type="text"
-              id="email"
-              className="w-[800px] pb-4 border-b outline-none placeholder:text-sm"
-              placeholder="example: abc@gmail.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <div className="flex items-center justify-end w-full gap-2">
-            <Button name="Back" handleOnClick={() => setIsForgotPassword(false)}/>
-            <Button name="Submit" handleOnClick={handleForgotPassword} style="px-4 py-2 rounded-md text-white bg-blue-500 text-semibold w-full outline-none"/>
-          </div>
-          </div>
-          
+          <Formik
+            initialValues={{ email: "" }}
+            validationSchema={Yup.object({
+              email: Yup.string()
+                .email("Invalid email format")
+                .required("Email is required"),
+            })}
+            onSubmit={handleForgotPassword}
+          >
+            {() => (
+              <Form className="flex flex-col gap-4">
+                <label htmlFor="email">Enter your email: </label>
+                <Field
+                  type="text"
+                  name="email"
+                  id="email"
+                  className="w-[800px] pb-4 border-b outline-none placeholder:text-sm"
+                  placeholder="example: abc@gmail.com"
+                />
+                <ErrorMessage
+                  name="email"
+                  component="small"
+                  className="text-red-500"
+                />
+                <div className="flex items-center justify-end w-full gap-2">
+                  <Button
+                    name="Back"
+                    handleOnClick={() => setIsForgotPassword(false)}
+                  />
+                  <Button
+                    name="Submit"
+                    type="submit"
+                    style="px-4 py-2 rounded-md text-white bg-blue-500 text-semibold w-full outline-none"
+                  />
+                </div>
+              </Form>
+            )}
+          </Formik>
         </div>
       )}
+
       <img
-        src="https://wallpapercave.com/wp/wp3537586.jpg"
+        src="https://static.vecteezy.com/system/resources/previews/028/792/419/large_2x/e-commerce-shopping-cart-with-multiple-products-a-sunlit-abstract-background-e-commerce-concept-ai-generative-free-photo.jpg"
         alt="background login"
         className="w-full h-full object-cover"
       />
       <div className="absolute top-0 bottom-0 left-1/2 right-0 flex items-center justify-center">
         <div className="p-8 bg-white flex flex-col items-center rounded-md min-w-[500px]">
           <h1 className="text-[28px] font-semibold text-main mb-8">
-            {Register ? "Register" : "Login"}
+            {isRegister ? "Register" : "Login"}
           </h1>
-          {Register && (
-            <div className="flex items-center gap-2">
-              <InputFields
-                value={payload.firstname}
-                setValue={setPayload}
-                nameKey="First Name"
-              />
-              <InputFields
-                value={payload.lastname}
-                setValue={setPayload}
-                nameKey="Last Name"
-              />
-            </div>
-          )}
-          {Register && (
-            <InputFields
-              value={payload.mobile}
-              setValue={setPayload}
-              nameKey="mobile"
-            />
-          )}
-          <InputFields
-            value={payload.email}
-            setValue={setPayload}
-            nameKey="email"
-          />
-          <InputFields
-            value={payload.password}
-            setValue={setPayload}
-            nameKey="password"
-            type="password"
-          />
-          <Button
-            name={Register ? "Register" : "Login"}
-            handleOnClick={handleSubmit}
-          ></Button>
+          <Formik
+            initialValues={{
+              firstname: "",
+              lastname: "",
+              mobile: "",
+              email: "",
+              password: "",
+            }}
+            validationSchema={isRegister ? registerSchema : loginSchema}
+            onSubmit={handleSubmit}
+          >
+            {() => (
+              <Form className="w-full flex flex-col gap-y-4">
+                {isRegister && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-full">
+                      <Field
+                        name="firstname"
+                        placeholder="First Name"
+                        className="px-4 py-2 rounded-md placeholder:text-sm border w-full focus:outline-blue-500"
+                        style={{ height: "40px" }} // Chiều cao cố định
+                      />
+                      <ErrorMessage
+                        name="firstname"
+                        component="small"
+                        className="text-red-500 block min-h-[16px]" // Chiều cao tối thiểu cho lỗi
+                      />
+                    </div>
+                    <div className="w-full">
+                      <Field
+                        name="lastname"
+                        placeholder="Last Name"
+                        className="px-4 py-2 rounded-md placeholder:text-sm border w-full focus:outline-blue-500"
+                        style={{ height: "40px" }} // Chiều cao cố định
+                      />
+                      <ErrorMessage
+                        name="lastname"
+                        component="small"
+                        className="text-red-500 block min-h-[16px]" // Chiều cao tối thiểu cho lỗi
+                      />
+                    </div>
+                  </div>
+                )}
+                {isRegister && (
+                  <div>
+                    <Field
+                      name="mobile"
+                      placeholder="Mobile"
+                      className="px-4 py-2 rounded-md placeholder:text-sm border w-full focus:outline-blue-500"
+                      style={{ height: "40px" }} // Chiều cao cố định
+                    />
+                    <ErrorMessage
+                      name="mobile"
+                      component="small"
+                      className="text-red-500 block min-h-[16px]" // Chiều cao tối thiểu cho lỗi
+                    />
+                  </div>
+                )}
+                <div>
+                  <Field
+                    name="email"
+                    placeholder="Email"
+                    className="px-4 py-2 rounded-md placeholder:text-sm border w-full focus:outline-blue-500"
+                    style={{ height: "40px" }} // Chiều cao cố định
+                  />
+                  <ErrorMessage
+                    name="email"
+                    component="small"
+                    className="text-red-500 block min-h-[16px]" // Chiều cao tối thiểu cho lỗi
+                  />
+                </div>
+                <div>
+                  <Field
+                    name="password"
+                    type="password"
+                    placeholder="Password"
+                    className="px-4 py-2 rounded-md placeholder:text-sm border w-full focus:outline-blue-500"
+                    style={{ height: "40px" }} // Chiều cao cố định
+                  />
+                  <ErrorMessage
+                    name="password"
+                    component="small"
+                    className="text-red-500 block min-h-[16px]" // Chiều cao tối thiểu cho lỗi
+                  />
+                </div>
+
+                {/* Hiển thị loader khi đang xử lý */}
+                {isLoading ? (
+                  <div className="flex justify-center items-center">
+                    <TailSpin color="#00BFFF" height={40} width={40} />
+                  </div>
+                ) : (
+                  <Button
+                    name={isRegister ? "Register" : "Login"}
+                    type="submit"
+                    style="w-full py-2 px-4 bg-blue-500 text-white rounded-md"
+                  />
+                )}
+              </Form>
+            )}
+          </Formik>
           <div className="flex items-center justify-between my-2 w-full text-sm">
-            {!Register && (
-              <span
-                onClick={() => setIsForgotPassword(true)}
-                className="text-blue-500 hover:underline cursor-pointer"
-              >
-                Forgot your account
-              </span>
+            {!isRegister && (
+              <>
+                <span
+                  onClick={() => setIsForgotPassword(true)}
+                  className="text-blue-500 hover:underline cursor-pointer"
+                >
+                  Forgot your account
+                </span>
+                <span
+                  className="text-blue-500 hover:underline cursor-pointer"
+                  onClick={() => setIsRegister(true)}
+                >
+                  Create account
+                </span>
+              </>
             )}
-            {!Register && (
-              <span
-                className="text-blue-500 hover:underline cursor-pointer"
-                onClick={() => setRegister(true)}
-              >
-                Create account
-              </span>
-            )}
-            {Register && (
+            {isRegister && (
               <span
                 className="text-blue-500 hover:underline cursor-pointer w-full text-center"
-                onClick={() => setRegister(false)}
+                onClick={() => setIsRegister(false)}
               >
                 Go Login
               </span>

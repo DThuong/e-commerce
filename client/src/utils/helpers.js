@@ -13,3 +13,19 @@ export const renderStar = (number) => {
 
     return star
 }
+
+export const validate = (payload, setInvalidFields) => {
+    let invalids = 0;
+    const invalidFields = []; // Temporary array for invalid fields
+  
+    Object.entries(payload).forEach(([key, value]) => {
+      if (value.trim() === "") {
+        invalids++;
+        invalidFields.push({ name: key, msg: "This field is required." });
+      }
+    });
+  
+    setInvalidFields(invalidFields); // Update state once after iteration
+    return invalids;
+  };
+  

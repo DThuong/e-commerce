@@ -42,8 +42,10 @@ const register = asyncHandler(async (req, res) => {
       msg: "Please enter all fields",
     });
   }
-  const user = await User.findOne({ email });
-  if (user) throw new Error("User already exists");
+  const userEmail = await User.findOne({ email });
+  const userMobile = await User.findOne({ mobile });
+  if (userEmail) throw new Error("User with email already exists");
+  else if (userMobile) throw new Error("User with mobile already exists");
   else {
     const token = makeToken();
     res.cookie(
@@ -53,7 +55,11 @@ const register = asyncHandler(async (req, res) => {
     );
     const html = `Vui lòng click vào link dưới đây để hoàn tất quá trình đăng ký, Link này sẽ hết hạn sau 15 phút: 
     <a href="${process.env.SERVER_URL}/api/user/finalregister/${token}">Click here</a>`;
-    await sendEmail({email, html, subject: "Hoàn tất đăng ký tài khoản e-commerce"});
+    await sendEmail({
+      email,
+      html,
+      subject: "Hoàn tất đăng ký tài khoản e-commerce",
+    });
     return res.json({
       success: true,
       msg: "Please check email to active your account",
@@ -64,11 +70,13 @@ const register = asyncHandler(async (req, res) => {
 const finalregister = asyncHandler(async (req, res) => {
   const cookie = req.cookies;
   const { token } = req.params;
+
   if (!cookie?.dataregister || cookie.dataregister.token !== token) {
-    res.clearCookie('dataregister')
+    res.clearCookie("dataregister");
     return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`);
   }
   const { email, password, firstname, lastname, mobile } = cookie?.dataregister;
+
   const createUser = await User.create({
     email,
     password,
@@ -76,8 +84,9 @@ const finalregister = asyncHandler(async (req, res) => {
     lastname,
     mobile,
   });
-  res.clearCookie('dataregister')
-  if (createUser) return res.redirect(`${process.env.CLIENT_URL}/finalregister/success`);
+  res.clearCookie("dataregister");
+  if (createUser)
+    return res.redirect(`${process.env.CLIENT_URL}/finalregister/success`);
   else return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`);
 });
 
@@ -195,8 +204,10 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   const result = await sendEmail(data);
   return res.status(200).json({
-    success: result.response?.includes('OK') ? true : false,
-    msg: result.response?.includes('OK') ? 'Hãy check mail của bạn' : 'Đã có lỗi, hãy thử lại sau !!!',
+    success: result.response?.includes("OK") ? true : false,
+    msg: result.response?.includes("OK")
+      ? "Hãy check mail của bạn"
+      : "Đã có lỗi, hãy thử lại sau !!!",
   });
 });
 

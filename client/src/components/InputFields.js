@@ -1,17 +1,18 @@
-import React from 'react';
+import React from "react";
 
-const InputFields = ({ value, setValue, nameKey, type = 'text' }) => {
+const InputFields = ({ value, setValue, nameKey, type }) => {
   const handleChange = (e) => {
+    const normalizedKey = nameKey.toLowerCase().replace(" ", "");
     setValue((prev) => ({
       ...prev,
-      [nameKey.toLowerCase().replace(' ', '')]: e.target.value, // Normalize key
+      [normalizedKey]: e.target.value,
     }));
   };
 
   const formattedNameKey = nameKey.slice(0, 1).toUpperCase() + nameKey.slice(1);
 
   return (
-    <div className="w-full relative">
+    <div className="w-full relative flex flex-col mb-2">
       {value && (
         <label
           htmlFor={nameKey}
@@ -22,7 +23,7 @@ const InputFields = ({ value, setValue, nameKey, type = 'text' }) => {
       )}
       <input
         id={nameKey}
-        type={type}
+        type={type || "text"}
         className="px-4 py-2 rounded-md placeholder:text-sm placeholder:italic border w-full my-2"
         placeholder={formattedNameKey}
         value={value}

@@ -5,3 +5,8 @@ export const apigetProduct = (params) => axios({
     method: 'GET',
     params
 })
+
+export const apigetProductById = (pid) => axios({
+    url: '/product/' + pid,
+    method: 'GET',
+})

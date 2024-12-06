@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { InputFields, Button } from "../../components";
+import { Button } from "../../components";
 import { apiRegister, apiLogin, apiForgotPassword } from "../../apis/user";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";

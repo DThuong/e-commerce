@@ -29,11 +29,11 @@ function App() {
           <Route path={path.HOME} element={<Home />} />
           <Route path={path.BLOGS} element={<Blog />} />
           <Route
-            path={path.DETAIL_PRODUCT__PID__TITLE}
+            path={path.DETAIL_PRODUCT__CATEGORY__PID__TITLE}
             element={<DetailProduct />}
           />
-          <Route path={path.PRODUCTS} element={<Product />} />
           <Route path={path.RESET_PASSWORD} element={<ResetPassword />} />
+          <Route path={path.PRODUCTS} element={<Product />} />
         </Route>
         <Route path={path.FINAL_REGISTER} element={<FinalRegister />} />
         <Route path={path.LOGIN} element={<Login />} />

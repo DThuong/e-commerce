@@ -23,8 +23,9 @@ const Header = () => {
           <FaShoppingCart color="red"></FaShoppingCart>
           <span>items (0)</span>
         </div>
-        <div className="flex items-center justify-center px-6 border-r">
+        <div className="flex items-center justify-center px-6 border-r gap-2">
           <FaUserCircle size={24} color="red"></FaUserCircle>
+          <span>profile</span>
         </div>
       </div>
     </div>

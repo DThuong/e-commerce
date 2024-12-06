@@ -10,7 +10,7 @@ const {MdOutlineMenu,MdRemoveRedEye,FaRegHeart} = icons
 const Product = ({ product }) => {
   return (
     <div className="w-full text-base px-[10px]">
-      <Link className="w-full border p-[15px] flex flex-col items-center relative group" to={`/${path.DETAIL_PRODUCT}/${product?._id}/${product?.title}`}>
+      <Link className="w-full border p-[15px] flex flex-col items-center relative group" to={`/${product?.category?.toLowerCase()}/${product?._id}/${product?.title}`}>
         {/* Product Image Section */}
         <div className="relative">
           <img

@@ -18,7 +18,7 @@ const TopHeader = () => {
         {isLoggedIn && current ? (
           <div className="flex items-center text-sm gap-4">
             <span>{`Xin chào ${current?.firstname} ${current?.lastname}`}</span>
-            <span onClick={() => dispatch(logout())} className="hover:rounded-full hover:bg-gray-200 hover:text-main p-2 cursor-pointer">
+            <span onClick={() => dispatch(logout())} className="hover:rounded-full hover:bg-gray-500 hover:text-main p-2 cursor-pointer">
               <TbLogout size={18} />
             </span>
           </div>

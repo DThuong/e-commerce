@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 // import { apiGetCategory } from "../apis/app";
 import { NavLink } from "react-router-dom";
 import { createSlug } from "../utils/helpers";

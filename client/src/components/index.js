@@ -10,4 +10,8 @@ export {default as Footer} from './Footer'
 export {default as InputFields} from './InputFields'
 export {default as Button} from './Button'
 export {default as Breadcrumb} from './Breadcrumb'
+export {default as SelectQuantity} from './SelectQuantity'
+export {default as ProductInforTab} from './ProductInforTab'
+export {default as Ratings} from './Ratings'
+export {default as Votebar} from './Votebar'
 

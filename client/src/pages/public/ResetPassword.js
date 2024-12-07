@@ -29,7 +29,7 @@ const ResetPassword = () => {
         onChange={(e) => setPassword(e.target.value)}
       />
       <div className="flex items-center justify-end w-full gap-2">
-      <Button name="Submit" handleOnClick={handleResetPassword} style="px-4 py-2 rounded-md text-white bg-blue-500 text-semibold w-full outline-none"/>
+      <Button name="Submit" handleOnClick={handleResetPassword} className="px-4 py-2 rounded-md text-white bg-blue-500 text-semibold w-full outline-none"/>
     </div>
     </div>
     

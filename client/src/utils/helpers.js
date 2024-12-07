@@ -28,4 +28,9 @@ export const validate = (payload, setInvalidFields) => {
     setInvalidFields(invalidFields); // Update state once after iteration
     return invalids;
   };
+
+export const formatMoney = function formatNumber(num) {
+  return new Intl.NumberFormat('en-US').format(num);
+}
+
   

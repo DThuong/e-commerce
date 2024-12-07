@@ -1,7 +1,7 @@
 import { FaUserCircle, FaShoppingCart, FaRegHeart } from "react-icons/fa";
 import { TiHome } from "react-icons/ti";
 import { TbLogout } from "react-icons/tb";
-import { IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowForward, IoIosArrowDown } from "react-icons/io";
 import { MdOutlineStar, MdOutlineStarBorder, MdOutlineMenu, MdRemoveRedEye, MdEmail } from "react-icons/md";
 
 const icons = {
@@ -15,7 +15,8 @@ const icons = {
     FaRegHeart,
     MdEmail,
     TbLogout,
-    IoIosArrowForward
+    IoIosArrowForward,
+    IoIosArrowDown
 }
 
 export default icons

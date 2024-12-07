@@ -14,4 +14,6 @@ export {default as SelectQuantity} from './SelectQuantity'
 export {default as ProductInforTab} from './ProductInforTab'
 export {default as Ratings} from './Ratings'
 export {default as Votebar} from './Votebar'
+export {default as SearchItems} from './SearchItems'
+export {default as InputSelect} from './InputSelect'
 

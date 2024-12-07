@@ -6,13 +6,19 @@ export const createSlug = string => string.toLowerCase().normalize("NFD").replac
 export const formatNumber = number => Number(number.toFixed(1)).toLocaleString() 
 
 export const renderStar = (number) => {
-    if(!Number(number)) return
-    const star = []
-    for(let i = 0; i < +number; i++) star.push(<MdOutlineStar color="orange"/>)
-    for(let i = 5; i > +number; i--) star.push(<MdOutlineStarBorder color="orange"/>)
+  const star = [];
+  const numStars = Number(number) || 0; // Nếu không hợp lệ hoặc 0, mặc định là 0.
 
-    return star
-}
+  for (let i = 0; i < 5; i++) {
+      if (i < numStars) {
+          star.push(<MdOutlineStar key={i} color="orange" />); // Ngôi sao đầy
+      } else {
+          star.push(<MdOutlineStarBorder key={i} color="orange" />); // Ngôi sao rỗng
+      }
+  }
+
+  return star;
+};
 
 export const validate = (payload, setInvalidFields) => {
     let invalids = 0;

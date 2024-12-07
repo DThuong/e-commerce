@@ -73,3 +73,30 @@ Based on 3 reviews
 Write a review`,
   },
 ];
+
+export const colors = [
+    { name: "Gray" }, 
+    { name: "Silver" }, 
+    { name: "White" }, 
+    { name: "Gold"}, 
+    { name: "Black" }, 
+    { name: "Red" },
+]
+
+export const sorts = [
+  {
+    id: 1,
+    value: '-sold',
+    text: 'best selling'
+  },
+  {
+    id: 2,
+    value: '-price',
+    text: 'Highest price to Lowest price'
+  },
+  {
+    id: 3,
+    value: 'price',
+    text: 'Lowest price to Highest price'
+  },
+]

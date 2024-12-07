@@ -6,7 +6,7 @@ import {
   Public,
   Blog,
   DetailProduct,
-  Product,
+  Products,
   FinalRegister,
   ResetPassword,
 } from "./pages/public";
@@ -33,7 +33,7 @@ function App() {
             element={<DetailProduct />}
           />
           <Route path={path.RESET_PASSWORD} element={<ResetPassword />} />
-          <Route path={path.PRODUCTS} element={<Product />} />
+          <Route path={path.PRODUCTS} element={<Products />} />
         </Route>
         <Route path={path.FINAL_REGISTER} element={<FinalRegister />} />
         <Route path={path.LOGIN} element={<Login />} />

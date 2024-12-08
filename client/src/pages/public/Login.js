@@ -54,7 +54,7 @@ const Login = () => {
           login({
             isLoggedIn: true,
             token: res.accessToken,
-            userData: res.userData,
+            userData: res.msg,
           })
         );
         navigate("/");

@@ -25,7 +25,7 @@ const verifyAccessToken = asyncHandler(async (req, res, next) => {
 // middleware phân quyền admin
 const isAdmin = asyncHandler((req, res, next) => {
   const { role } = req.user;
-  if (role !== "admin") {
+  if (+role !== 2002) {
     return res.status(401).json({
       success: false,
       msg: "Require admin role",

@@ -11,6 +11,7 @@ const { sendEmail } = require("../utils/sendMail");
 
 const crypto = require("crypto");
 const makeToken = require("uniqid");
+const users = require("../utils/contants");
 
 // Đăng ký
 // const register = asyncHandler(async (req, res) => {
@@ -133,7 +134,7 @@ const login = asyncHandler(async (req, res) => {
 const getCurrent = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   const user = await User.findById({ _id }).select(
-    "-refreshToken -password -role"
+    "-refreshToken -password"
   );
   return res.status(200).json({
     success: user ? true : false,
@@ -239,18 +240,69 @@ const resetPassword = asyncHandler(async (req, res) => {
 
 // lấy tất cả user (quyền admin)
 const getUsers = asyncHandler(async (req, res) => {
-  const response = await User.find().select("-refreshToken -password -role");
-  return res.status(200).json({
-    success: response ? true : false,
-    users: response,
-  });
+   // 2 object giống nhau là queries và req.query (copy req.query)
+   const queries = { ...req.query };
+   // Tách các trường đặc biệt ra khỏi query
+   const excludeFields = ["limit", "sort", "page", "fields"];
+   excludeFields.forEach((item) => delete queries[item]); // xóa các trường ra khỏi queries
+ 
+   // Format lại các operators cho đúng cú pháp của mongoose
+   let queryString = JSON.stringify(queries);
+   queryString = queryString.replace(
+     /\b(gte|gt|lt|lte)\b/g,
+     (matchedEl) => `$${matchedEl}`
+   );
+   const formatQueryString = JSON.parse(queryString);
+ 
+   //Filtering
+   if (queries?.name)
+     formatQueryString.name = { $regex: queries.name, $options: "i" };
+   
+   let queryCommand = User.find(formatQueryString);
+ 
+   // sorting
+   if (req.query.sort) {
+     const sortBy = req.query.sort.split(",").join("");
+     queryCommand = queryCommand.sort(sortBy);
+   }
+ 
+   // Fields limiting
+   if (req.query.fields) {
+     const fieldsLimit = req.query.fields.split(",").join("");
+     queryCommand = queryCommand.select(fieldsLimit);
+   }
+ 
+   // Pagination
+   // page=2&limit=10, 1-10 page 1, 11-20 page 2, 21-30 page 3
+   const page = req.query.page * 1 || 1;
+   const limit = req.query.limit * 1 || process.env.LIMIT_PRODUCTS || 10;
+   const skip = (page - 1) * limit;
+   queryCommand = queryCommand.skip(skip).limit(limit);
+ 
+   // execute
+   queryCommand
+     .exec()
+     .then(async (response) => {
+       const counts = await User.find(formatQueryString).countDocuments();
+       return res.status(200).json({
+         success: response ? true : false,
+         counts,
+         users: response ? response : "Can't find user",
+       });
+     })
+     .catch((err) => {
+       return res.status(500).json({
+         success: false,
+         message: err.message,
+       });
+     });
 });
 
 // Xóa 1 user dựa trên id
 const deleteUserById = asyncHandler(async (req, res) => {
-  const { _id } = req.query;
-  if (!_id) throw new Error("Can't find id");
-  const response = await User.findByIdAndDelete(_id);
+  const { uid } = req.params;
+  if (!uid) throw new Error("Can't find id");
+  const response = await User.findByIdAndDelete(uid);
   return res.status(200).json({
     success: response ? true : false,
     deletedUser: response
@@ -280,7 +332,7 @@ const updateUserByAdmin = asyncHandler(async (req, res) => {
     throw new Error("Can't find id");
   const update = await User.findByIdAndUpdate(uid, req.body, {
     new: true,
-  }).select("-password -role -refreshToken");
+  }).select("-password -refreshToken");
   return res.status(200).json({
     success: update ? true : false,
     UPdatedUser: update ? update : "Failed to update",
@@ -355,6 +407,15 @@ const updateCartUser = asyncHandler(async (req, res) => {
   }
 });
 
+// create user by admin
+const createUsers = asyncHandler(async (req, res) => {
+  const response = await User.create(users);
+  return res.status(200).json({
+    success: response ? true : false,
+    users: response,
+  });
+});
+
 module.exports = {
   register,
   login,
@@ -370,4 +431,5 @@ module.exports = {
   updateUserAddress,
   updateCartUser,
   finalregister,
+  createUsers
 };

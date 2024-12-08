@@ -13,10 +13,13 @@ export const userSlice = createSlice({
         login: (state, action) => {
             state.isLoggedIn = action.payload.isLoggedIn;
             state.token = action.payload.token;
+            state.current = action.payload.msg
         },
         logout: (state, action) => {
-            state.isLoggedIn = false
-            state.token = null
+            state.isLoggedIn=  false;
+            state.current=null;
+            state.token= null;
+            state.isLoading= false;
         }
     },
     extraReducers: (builder) => {

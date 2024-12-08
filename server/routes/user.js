@@ -10,12 +10,13 @@ router.post("/refreshtoken", userControllers.refreshAccessToken);
 router.get("/logout", userControllers.logOut);
 router.post("/forgotpassword", userControllers.forgotPassword);
 router.put("/resetpassword", userControllers.resetPassword);
-router.get("/", [verifyAccessToken, isAdmin], userControllers.getUsers);
-router.delete("/", [verifyAccessToken, isAdmin], userControllers.deleteUserById);
+router.get("/getusers", [verifyAccessToken, isAdmin], userControllers.getUsers);
+router.post("/createusers", userControllers.createUsers);
+router.delete("/deleteuser/:uid", [verifyAccessToken, isAdmin], userControllers.deleteUserById);
 router.put("/current", [verifyAccessToken], userControllers.updateUserById);
 router.put("/address/", [verifyAccessToken], userControllers.updateUserAddress);
 router.put("/cart/", [verifyAccessToken], userControllers.updateCartUser)
-router.put("/:uid", [verifyAccessToken,isAdmin], userControllers.updateUserByAdmin);
+router.put("/updateUserByAdmin/:uid", [verifyAccessToken,isAdmin], userControllers.updateUserByAdmin);
 
 module.exports = router;
 

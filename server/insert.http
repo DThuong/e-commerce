@@ -3,3 +3,6 @@ POST http://localhost:5000/api/insert/
 
 ### insert product category data
 POST http://localhost:5000/api/insert/cate
+
+### insert user sample data
+POST http://localhost:5000/api/user/createusers

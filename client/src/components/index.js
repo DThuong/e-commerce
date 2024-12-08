@@ -16,4 +16,7 @@ export {default as Ratings} from './Ratings'
 export {default as Votebar} from './Votebar'
 export {default as SearchItems} from './SearchItems'
 export {default as InputSelect} from './InputSelect'
+export {default as NotFound} from './NotFound'
+export {default as SidebarAdmin} from './SidebarAdmin'
+export {default as UserModal} from './UserModal'
 

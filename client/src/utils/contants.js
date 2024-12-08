@@ -1,4 +1,5 @@
 import path from "./path";
+import icons from "./icons";
 export const navigation = [
   {
     id: 1,
@@ -75,28 +76,80 @@ Write a review`,
 ];
 
 export const colors = [
-    { name: "Gray" }, 
-    { name: "Silver" }, 
-    { name: "White" }, 
-    { name: "Gold"}, 
-    { name: "Black" }, 
-    { name: "Red" },
-]
+  { name: "Gray" },
+  { name: "Silver" },
+  { name: "White" },
+  { name: "Gold" },
+  { name: "Black" },
+  { name: "Red" },
+];
 
 export const sorts = [
   {
     id: 1,
-    value: '-sold',
-    text: 'best selling'
+    value: "-sold",
+    text: "best selling",
   },
   {
     id: 2,
-    value: '-price',
-    text: 'Highest price to Lowest price'
+    value: "-price",
+    text: "Highest price to Lowest price",
   },
   {
     id: 3,
-    value: 'price',
-    text: 'Lowest price to Highest price'
+    value: "price",
+    text: "Lowest price to Highest price",
+  },
+];
+
+const { MdDashboard, FaUsers, GoListUnordered, FaProductHunt } = icons;
+export const adminSidebar = [
+  {
+    id: 1,
+    type: "single",
+    text: "Dashboard",
+    icon: <MdDashboard />,
+    path: `${path.DASHBOARD}`,
+  },
+  {
+    id: 2,
+    type: "single",
+    text: "Manage users",
+    icon: <FaUsers />,
+    path: `${path.MANAGE_USER}`,
+  },
+  {
+    id: 3,
+    type: "parent",
+    text: "Manage products",
+    icon: <FaProductHunt />,
+    submenu: [
+      {
+        text: "Create product",
+        path: `${path.CREATE_PRODUCT}`,
+      },
+      {
+        text: "Manage products",
+        path: `${path.MANAGE_PRODUCT}`,
+      },
+    ],
+  },
+  {
+    id: 4,
+    type: "single",
+    text: "Manage orders",
+    icon: <GoListUnordered />,
+    path: `${path.MANAGE_ORDER}`,
+  },
+];
+
+export const roles = [
+  {
+    code: 2024,
+    value: 'User'
+  },
+  {
+    code: 2002,
+    value: 'Admin'
   },
 ]

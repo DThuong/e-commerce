@@ -40,7 +40,9 @@ const ManageUsers = () => {
 
   const handleUserDelete = (id) => {
     setUsers((prevUsers) =>
-      Array.isArray(prevUsers) ? prevUsers.filter((user) => user._id !== id) : []
+      Array.isArray(prevUsers)
+        ? prevUsers.filter((user) => user._id !== id)
+        : []
     );
   };
 
@@ -74,9 +76,19 @@ const ManageUsers = () => {
                 <td className="py-3 px-6 text-left">{idx + 1}</td>
                 <td className="py-3 px-6 text-left">{user.email}</td>
                 <td className="py-3 px-6 text-left">{`${user.firstname} ${user.lastname}`}</td>
-                <td className="py-3 px-6 text-left">{roles?.find((role) => Number(role?.code) === Number(user.role))?.value}</td>
-                <td className="py-3 px-6 text-left">{user.mobile}</td>
                 <td className="py-3 px-6 text-left">
+                  {
+                    roles?.find(
+                      (role) => Number(role?.code) === Number(user.role)
+                    )?.value
+                  }
+                </td>
+                <td className="py-3 px-6 text-left">{user.mobile}</td>
+                <td
+                  className={`py-3 px-6 text-left ${
+                    user.isBlocked ? "text-red-500" : "text-green-500"
+                  }`}
+                >
                   {user.isBlocked ? "Blocked" : "Active"}
                 </td>
                 <td className="py-3 px-6 text-left">

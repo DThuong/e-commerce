@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { apiUpdateUsers, apiDeleteUser } from "../apis";
+import { apiUpdateUsers, apiDeleteUser, apiBlockUser } from "../apis";
 
 const UserModal = ({ type, user, onClose, onUserUpdate, onUserDelete }) => {
   const { register, handleSubmit, reset } = useForm();
@@ -22,9 +22,9 @@ const UserModal = ({ type, user, onClose, onUserUpdate, onUserDelete }) => {
   const onSubmit = async (data) => {
     try {
       if (type === "edit") {
-         // Chuyển đổi lại giá trị role từ mã số sang chuỗi trước khi gửi API
+        // Chuyển đổi lại giá trị role từ mã số sang chuỗi trước khi gửi API
         const updatedData = {
-            ...data,
+          ...data,
         };
 
         // Include user ID in the data payload
@@ -32,12 +32,18 @@ const UserModal = ({ type, user, onClose, onUserUpdate, onUserDelete }) => {
 
         // Call API to update user
         const response = await apiUpdateUsers(uid, updatedData);
-        console.log(response);
         if (response.success) onUserUpdate(response.UPdatedUser);
+
+        // Xử lý thay đổi trạng thái khóa/mở khóa
+        const shouldBlock = data.status === "Blocked"; // So sánh trực tiếp với giá trị chuỗi
+        console.log(typeof shouldBlock)
+        if (shouldBlock !== user?.isBlocked) {
+          await apiBlockUser(user?._id, shouldBlock);
+        }
       } else if (type === "delete") {
         // Call your delete API here
-        const res = await  apiDeleteUser(user?._id)
-        if(res.success) onUserDelete(user?._id)
+        const res = await apiDeleteUser(user?._id);
+        if (res.success) onUserDelete(user?._id);
       }
 
       onClose(); // Close the modal after success
@@ -114,6 +120,7 @@ const UserModal = ({ type, user, onClose, onUserUpdate, onUserDelete }) => {
                 </option>
               </select>
             </div>
+
             <div className="flex justify-end gap-2">
               <button
                 type="button"

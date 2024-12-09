@@ -46,4 +46,10 @@ export const apiDeleteUser = (uid) => axios({
     method: 'DELETE',
 })
 
+export const apiBlockUser = async (uid, isBlocked) => axios({
+    url: `/user/blockuserbyadmin/${uid}`,
+    method: 'PUT',
+    data: {isBlocked}
+});
+
 

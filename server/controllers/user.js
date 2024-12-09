@@ -104,6 +104,13 @@ const login = asyncHandler(async (req, res) => {
   }
   const user = await User.findOne({ email });
   if (user && (await user.comparePassword(password))) {
+    // Check if the account is blocked
+    if (user.isBlocked) {
+      return res.status(403).json({
+        success: false,
+        msg: "Your account has been blocked. Please contact support.",
+      });
+    }
     // tách password và role ra khỏi response
     const { role, password, refreshToken, ...userData } = user.toObject();
     // tạo access Token
@@ -127,15 +134,18 @@ const login = asyncHandler(async (req, res) => {
       accessToken,
       userData,
     });
-  } else throw new Error("Invalid email or password");
+  } else {
+    return res.status(404).json({
+      success: false,
+      msg: "User not found",
+    });
+  }
 });
 
 // Lấy 1 user cụ thể thông qua id
 const getCurrent = asyncHandler(async (req, res) => {
   const { _id } = req.user;
-  const user = await User.findById({ _id }).select(
-    "-refreshToken -password"
-  );
+  const user = await User.findById({ _id }).select("-refreshToken -password");
   return res.status(200).json({
     success: user ? true : false,
     msg: user ? user : "user not found!!!",
@@ -240,62 +250,62 @@ const resetPassword = asyncHandler(async (req, res) => {
 
 // lấy tất cả user (quyền admin)
 const getUsers = asyncHandler(async (req, res) => {
-   // 2 object giống nhau là queries và req.query (copy req.query)
-   const queries = { ...req.query };
-   // Tách các trường đặc biệt ra khỏi query
-   const excludeFields = ["limit", "sort", "page", "fields"];
-   excludeFields.forEach((item) => delete queries[item]); // xóa các trường ra khỏi queries
- 
-   // Format lại các operators cho đúng cú pháp của mongoose
-   let queryString = JSON.stringify(queries);
-   queryString = queryString.replace(
-     /\b(gte|gt|lt|lte)\b/g,
-     (matchedEl) => `$${matchedEl}`
-   );
-   const formatQueryString = JSON.parse(queryString);
- 
-   //Filtering
-   if (queries?.name)
-     formatQueryString.name = { $regex: queries.name, $options: "i" };
-   
-   let queryCommand = User.find(formatQueryString);
- 
-   // sorting
-   if (req.query.sort) {
-     const sortBy = req.query.sort.split(",").join("");
-     queryCommand = queryCommand.sort(sortBy);
-   }
- 
-   // Fields limiting
-   if (req.query.fields) {
-     const fieldsLimit = req.query.fields.split(",").join("");
-     queryCommand = queryCommand.select(fieldsLimit);
-   }
- 
-   // Pagination
-   // page=2&limit=10, 1-10 page 1, 11-20 page 2, 21-30 page 3
-   const page = req.query.page * 1 || 1;
-   const limit = req.query.limit * 1 || process.env.LIMIT_PRODUCTS || 10;
-   const skip = (page - 1) * limit;
-   queryCommand = queryCommand.skip(skip).limit(limit);
- 
-   // execute
-   queryCommand
-     .exec()
-     .then(async (response) => {
-       const counts = await User.find(formatQueryString).countDocuments();
-       return res.status(200).json({
-         success: response ? true : false,
-         counts,
-         users: response ? response : "Can't find user",
-       });
-     })
-     .catch((err) => {
-       return res.status(500).json({
-         success: false,
-         message: err.message,
-       });
-     });
+  // 2 object giống nhau là queries và req.query (copy req.query)
+  const queries = { ...req.query };
+  // Tách các trường đặc biệt ra khỏi query
+  const excludeFields = ["limit", "sort", "page", "fields"];
+  excludeFields.forEach((item) => delete queries[item]); // xóa các trường ra khỏi queries
+
+  // Format lại các operators cho đúng cú pháp của mongoose
+  let queryString = JSON.stringify(queries);
+  queryString = queryString.replace(
+    /\b(gte|gt|lt|lte)\b/g,
+    (matchedEl) => `$${matchedEl}`
+  );
+  const formatQueryString = JSON.parse(queryString);
+
+  //Filtering
+  if (queries?.name)
+    formatQueryString.name = { $regex: queries.name, $options: "i" };
+
+  let queryCommand = User.find(formatQueryString);
+
+  // sorting
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(",").join("");
+    queryCommand = queryCommand.sort(sortBy);
+  }
+
+  // Fields limiting
+  if (req.query.fields) {
+    const fieldsLimit = req.query.fields.split(",").join("");
+    queryCommand = queryCommand.select(fieldsLimit);
+  }
+
+  // Pagination
+  // page=2&limit=10, 1-10 page 1, 11-20 page 2, 21-30 page 3
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || process.env.LIMIT_PRODUCTS || 10;
+  const skip = (page - 1) * limit;
+  queryCommand = queryCommand.skip(skip).limit(limit);
+
+  // execute
+  queryCommand
+    .exec()
+    .then(async (response) => {
+      const counts = await User.find(formatQueryString).countDocuments();
+      return res.status(200).json({
+        success: response ? true : false,
+        counts,
+        users: response ? response : "Can't find user",
+      });
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        success: false,
+        message: err.message,
+      });
+    });
 });
 
 // Xóa 1 user dựa trên id
@@ -416,6 +426,34 @@ const createUsers = asyncHandler(async (req, res) => {
   });
 });
 
+const blockUserById = asyncHandler(async (req, res) => {
+  const { uid } = req.params;
+  let { isBlocked } = req.body;
+
+  // Chuyển đổi isBlocked thành boolean
+  if (typeof isBlocked === "string") {
+    isBlocked = isBlocked === "true";
+  }
+
+  if (typeof isBlocked !== "boolean") {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid isBlocked value" });
+  }
+
+  const user = await User.findByIdAndUpdate(uid, { isBlocked }, { new: true });
+
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: `User ${isBlocked ? "blocked" : "unblocked"} successfully.`,
+    updatedUser: user,
+  });
+});
+
 module.exports = {
   register,
   login,
@@ -431,5 +469,6 @@ module.exports = {
   updateUserAddress,
   updateCartUser,
   finalregister,
-  createUsers
+  createUsers,
+  blockUserById,
 };

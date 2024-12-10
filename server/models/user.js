@@ -57,6 +57,9 @@ var userSchema = new mongoose.Schema(
     passwordResetExpires: Date,
     registerToken: {
       type: String,
+    },
+    avatar: {
+      type: String,
     }
   },
   {

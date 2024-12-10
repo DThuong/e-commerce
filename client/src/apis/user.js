@@ -52,4 +52,23 @@ export const apiBlockUser = async (uid, isBlocked) => axios({
     data: {isBlocked}
 });
 
+export const apiUpdateUser = async (data) => axios({
+    url: "/user/current",
+    method: 'PUT',
+    data
+});
+
+export const apiUpdateCart = async (data) => axios({
+    url: "/user/cart",
+    method: 'PUT',
+    data
+});
+
+export const apiDeleteCart = async (pid) => axios({
+    url: "/user/remove-cart/" + pid,
+    method: 'DELETE',
+});
+
+
+
 

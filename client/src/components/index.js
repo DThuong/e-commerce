@@ -19,4 +19,6 @@ export {default as InputSelect} from './InputSelect'
 export {default as NotFound} from './NotFound'
 export {default as SidebarAdmin} from './SidebarAdmin'
 export {default as UserModal} from './UserModal'
+export {default as MemberSidebar} from './MemberSidebar'
+export {default as InputForm} from './InputForm'
 

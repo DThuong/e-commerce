@@ -1,3 +1,5 @@
+import { WishList } from "../pages/member"
+
 const path = {
     PUBLIC: '/',
     HOME: '',
@@ -22,6 +24,9 @@ const path = {
     //Member
     MEMBER: 'member',
     PERSONAL: 'personal',
+    MY_CART: 'my-cart',
+    WISH_LIST: 'wish-list',
+    HISTORY: 'history',
 }
 
 export default path

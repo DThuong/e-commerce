@@ -22,10 +22,10 @@ const breakpointColumnsObj = {
 
 const validCategories = [
   "smartphone",
-  "accessories",
-  "television",
   "tablet",
   "laptop",
+  "accessories",
+  "television",
   "printer",
   "speaker",
   "camera",
@@ -43,7 +43,7 @@ const Products = () => {
   const readableCategory = category?.split("-").join("") || "Product List";
 
   const fetchProductByCategory = async (queries) => {
-    const res = await apigetProduct(queries);
+    const res = await apigetProduct({ ...queries, category: readableCategory });
     if (res.success) {
       setproducts(res.products);
     }
@@ -74,27 +74,31 @@ const Products = () => {
     },
     [activeClick]
   );
+
   const handleFilterChange = (name, selectedOptions) => {
     setFilters((prev) => {
       const updatedFilters = { ...prev, [name.toLowerCase()]: selectedOptions };
-
-      // Tạo URLSearchParams chỉ chứa tham số color (các tham số không cần thiết sẽ bị loại bỏ)
-      const newParams = new URLSearchParams();
-
+  
+      // Tạo URLSearchParams, giữ lại các tham số cũ, và thêm bộ lọc mới
+      const newParams = new URLSearchParams(params);
+  
       if (selectedOptions.length > 0) {
-        newParams.set("color", selectedOptions.join(",")); // Chỉ thêm color vào URL
+        newParams.set("color", selectedOptions.join(","));
+      } else {
+        newParams.delete("color"); // Nếu không có bộ lọc, xóa tham số này
       }
-
-      // Cập nhật lại URL với tham số color
+  
+      // Cập nhật URL
       navigate({
-        pathname: `/${category}`,
+        pathname: `/${readableCategory}`,
         search: newParams.toString(),
       });
-
+  
       return updatedFilters;
     });
   };
-
+  
+  
   const changeValue = useCallback(
     (e) => {
       setSort(e);
@@ -103,12 +107,21 @@ const Products = () => {
   );
 
   useEffect(() => {
-    if (validCategories.includes(category))
-      navigate({
-        pathname: `/${category}`,
-        search: createSearchParams({ sort }).toString(),
-      });
-  }, [sort, category]);
+    // Tạo đối tượng queries kết hợp từ các params hiện tại và filters
+    const queries = { ...params, ...filters, sort };
+  
+    // Gọi API với các tham số (cả filter và sort)
+    fetchProductByCategory(queries);
+  
+    // Cập nhật URL với các tham số mới (filter + sort)
+    navigate({
+      pathname: `/${readableCategory}`,
+      search: createSearchParams(queries).toString(),
+    });
+  }, [filters, sort, params, readableCategory, navigate]);  // Đảm bảo là có cả filters và sort trong phụ thuộc
+  
+  
+
 
   return (
     <div className="w-full">

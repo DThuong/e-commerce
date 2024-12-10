@@ -324,14 +324,18 @@ const deleteUserById = asyncHandler(async (req, res) => {
 // Cập nhật 1 user dựa trên id
 const updateUserById = asyncHandler(async (req, res) => {
   const { _id } = req.user;
+  const {firstname, lastname, email, mobile} = req.body
+  const data = {firstname, lastname, email, mobile}
+  if(req.file) data.avatar = req.file.path
+  else throw new Error('File not found')
   if (!_id || Object.keys(req.body).length === 0)
     throw new Error("Can't find id");
-  const update = await User.findByIdAndUpdate(_id, req.body, {
+  const update = await User.findByIdAndUpdate(_id, data, {
     new: true,
   }).select("-password -role -refreshToken");
   return res.status(200).json({
     success: update ? true : false,
-    UPdatedUser: update ? update : "Failed to update",
+    msg: update ? update : "Failed to update",
   });
 });
 
@@ -376,8 +380,8 @@ const updateUserAddress = asyncHandler(async (req, res) => {
 // update User's cart
 const updateCartUser = asyncHandler(async (req, res) => {
   const { _id } = req.user;
-  const { pid, quantity, color } = req.body;
-  if (!pid || !quantity || !color) throw new Error("missing inputs");
+  const { pid, quantity = 1, color } = req.body;
+  if (!pid || !color) throw new Error("missing inputs");
   const user = await User.findById(_id).select("cart");
   const alreadyProduct = user?.cart?.find(
     (el) => el.product.toString() === pid
@@ -386,12 +390,12 @@ const updateCartUser = asyncHandler(async (req, res) => {
     if (alreadyProduct.color === color) {
       const response = await User.updateOne(
         { cart: { $elemMatch: alreadyProduct } },
-        { $set: { "cart.$.quantity": quantity } },
+        { $set: { "cart.$.quantity": quantity, "cart.$.color": color } },
         { new: true }
       );
       return res.status(200).json({
         success: response ? true : false,
-        response: response ? response : "something went wrong",
+        msg: response ? response : "something went wrong",
       });
     } else {
       const response = await User.findByIdAndUpdate(
@@ -401,7 +405,7 @@ const updateCartUser = asyncHandler(async (req, res) => {
       );
       return res.status(200).json({
         success: response ? true : false,
-        response: response ? response : "cannot update user's cart",
+        msg: response ? response : "cannot update user's cart",
       });
     }
   } else {
@@ -412,14 +416,46 @@ const updateCartUser = asyncHandler(async (req, res) => {
     );
     return res.status(200).json({
       success: response ? true : false,
-      response: response ? response : "cannot update user's cart",
+      msg: response ? response : "cannot update user's cart",
     });
   }
 });
 
-// create user by admin
+// remove product in cart
+const removeProductInCart = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  const { pid} = req.body;
+  const user = await User.findById(_id).select("cart");
+  const alreadyProduct = user?.cart?.find(
+    (el) => el.product.toString() === pid
+  );
+  if (!alreadyProduct) {
+    return res.status(200).json({
+      success: true,
+      msg : "updated your cart",
+    });
+  }
+  const response = await User.findByIdAndUpdate(
+    _id,
+    { $pull: { cart: { product: pid } } },
+    { new: true }
+  );
+  return res.status(200).json({
+    success: response ? true : false,
+    msg: response ? response : "cannot update user's cart",
+  });
+});
+
+
+// create user
 const createUsers = asyncHandler(async (req, res) => {
-  const response = await User.create(users);
+  // Thêm avatar mặc định vào từng user trong mảng `users`
+  const usersWithDefaultAvatar = users.map(user => ({
+    ...user,
+    avatar: "https://res.cloudinary.com/dj5buyo04/image/upload/v1733829770/e-commerce-storage/jnr4tkuun8cfzsm5try0.jpg",
+  }));
+
+  const response = await User.create(usersWithDefaultAvatar);
   return res.status(200).json({
     success: response ? true : false,
     users: response,
@@ -471,4 +507,5 @@ module.exports = {
   finalregister,
   createUsers,
   blockUserById,
+  removeProductInCart
 };

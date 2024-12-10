@@ -36,9 +36,9 @@ const UserModal = ({ type, user, onClose, onUserUpdate, onUserDelete }) => {
 
         // Xử lý thay đổi trạng thái khóa/mở khóa
         const shouldBlock = data.status === "Blocked"; // So sánh trực tiếp với giá trị chuỗi
-        console.log(typeof shouldBlock)
         if (shouldBlock !== user?.isBlocked) {
-          await apiBlockUser(user?._id, shouldBlock);
+          const res = await apiBlockUser(user?._id, shouldBlock);
+          if (res.success) onUserUpdate({ ...user, isBlocked: shouldBlock });
         }
       } else if (type === "delete") {
         // Call your delete API here

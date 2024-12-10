@@ -102,7 +102,16 @@ export const sorts = [
   },
 ];
 
-const { MdDashboard, FaUsers, GoListUnordered, FaProductHunt } = icons;
+const {
+  MdDashboard,
+  FaUsers,
+  GoListUnordered,
+  FaProductHunt,
+  FaUser,
+  TbJewishStarFilled,
+  FaHistory,
+  FaShoppingCart,
+} = icons;
 export const adminSidebar = [
   {
     id: 1,
@@ -143,13 +152,44 @@ export const adminSidebar = [
   },
 ];
 
+export const memberSidebar = [
+  {
+    id: 1,
+    type: "single",
+    text: "Personal",
+    icon: <FaUser />,
+    path: `${path.PERSONAL}`,
+  },
+  {
+    id: 2,
+    type: "single",
+    text: "My cart",
+    icon: <FaShoppingCart />,
+    path: `${path.MY_CART}`,
+  },
+  {
+    id: 3,
+    type: "single",
+    text: "Buy history",
+    icon: <FaHistory />,
+    path: `${path.HISTORY}`,
+  },
+  {
+    id: 4,
+    type: "single",
+    text: "Wish list",
+    icon: <TbJewishStarFilled />,
+    path: `${path.WISH_LIST}`,
+  },
+];
+
 export const roles = [
   {
     code: 2024,
-    value: 'User'
+    value: "User",
   },
   {
     code: 2002,
-    value: 'Admin'
+    value: "Admin",
   },
-]
+];

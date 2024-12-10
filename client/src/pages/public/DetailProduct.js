@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { apigetProductById, apigetProduct } from "../../apis/product";
+import { apigetProductById, apigetProduct } from "../../apis";
+import { apiUpdateCart } from "../../apis";
 import { Breadcrumb, Button, SelectQuantity, ProductInforTab, Product } from "../../components";
 import Slider from "react-slick";
 import { renderStar, formatMoney } from "../../utils/helpers";
+import { toast } from "react-toastify";
+import { colors } from "../../utils/contants"; 
 
 const sliderSettings = {
   dots: false,
@@ -17,7 +20,9 @@ const DetailProduct = () => {
   const { pid, title, category } = useParams();
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
-  const [activeImage, setActiveImage] = useState(""); // State for currently displayed image
+  const [activeImage, setActiveImage] = useState(""); 
+  const [quantity, setQuantity] = useState(1);
+  const [color, setColor] = useState(colors[0].name); // Set màu mặc định là màu đầu tiên trong mảng
 
   // Fetch product details by ID
   const fetchProductData = async () => {
@@ -25,7 +30,7 @@ const DetailProduct = () => {
       const response = await apigetProductById(pid);
       if (response.success) {
         setProduct(response.detail);
-        setActiveImage(response.detail.images?.[0] || ""); // Set initial image
+        setActiveImage(response.detail.images?.[0] || "");
       }
     } catch (error) {
       console.error("Error fetching product details:", error);
@@ -48,6 +53,24 @@ const DetailProduct = () => {
       fetchRelatedProducts();
     }
   }, [pid]);
+
+  // Hàm xử lý thêm vào giỏ hàng
+  const handleAddToCart = async () => {
+    try {
+      const response = await apiUpdateCart({
+        pid,
+        quantity: quantity,
+        color: color,
+      });
+      if (response.data.success) {
+        toast.success("Thêm vào giỏ hàng thành công!");
+      } else {
+        console.error("Không thể thêm vào giỏ hàng:", response.data.msg);
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API thêm vào giỏ hàng:", error);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -80,7 +103,7 @@ const DetailProduct = () => {
                   className={`h-[143px] w-[143px] border object-cover cursor-pointer ${
                     activeImage === img ? "border-main" : "border-gray-300"
                   }`}
-                  onClick={() => setActiveImage(img)} // Update the displayed image on click
+                  onClick={() => setActiveImage(img)}
                 />
               ))}
             </Slider>
@@ -96,16 +119,32 @@ const DetailProduct = () => {
           </div>
           <div className="flex items-center gap-2">
             {renderStar(product?.totalRating)}
-            <span className="ml-4">{`sold: (${product?.sold} pieces)`}</span>
-            </div>
+            <span className="ml-4">{`sold: (${product?.sold || 0} pieces)`}</span>
+          </div>
           <ul className="text-sm text-gray-500 list-disc pl-4">
             {product?.description?.map((desc, idx) => (
               <li key={idx}>{desc}</li>
             ))}
           </ul>
+
+          {/* Chọn màu */}
+          <div className="flex items-center gap-2">
+            <span>Choose Color:</span>
+            <select
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="border px-2 py-1 rounded"
+            >
+              {colors.map((c, i) => (
+                <option value={c.name} key={i}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Chọn số lượng & nút Add to Cart */}
           <div className="flex flex-col gap-4">
-            <SelectQuantity />
-            <Button name="Add to Cart" />
+            <SelectQuantity quantity={quantity} setQuantity={setQuantity} />
+            <Button name="Add to Cart" onClick={() => handleAddToCart()} />
           </div>
         </div>
       </div>

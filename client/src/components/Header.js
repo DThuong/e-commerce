@@ -1,45 +1,112 @@
-import React, { Fragment } from "react";
+import React, { useEffect, useState , useRef} from "react";
 import logo from "../assets/logo.png";
 import icons from "../utils/icons";
 import { Link } from "react-router-dom";
 import path from "../utils/path";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../store/user/userSlice";
 
 const { FaUserCircle, FaShoppingCart } = icons;
+
 const Header = () => {
   const { current } = useSelector((state) => state.user);
-  return (
-    <div className="w-main flex justify-between h-[110px] py-[35px] overflow-hidden">
-      <div>
-        <Link to={`/${path.HOME}`}>
-          <img
-            src={logo}
-            alt="logo"
-            className="max-h-[110px] object-contain object-top transform -translate-y-9"
-          />
-        </Link>
-      </div>
+  const [isShowOption, setIsShowOption] = useState(false);
+  const dispatch = useDispatch();
+  const dropdownRef = useRef(null);
 
-      <div className="flex items-center justify-center">
-        {current && (
-          <Fragment>
-            <div className="flex items-center justify-center gap-2 px-6 border-r cursor-pointer">
-              <FaShoppingCart color="red"></FaShoppingCart>
-              <span>items (0)</span>
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsShowOption(false); // Đóng dropdown nếu click bên ngoài
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside); // Lắng nghe sự kiện chuột
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside); // Xóa sự kiện khi component bị hủy
+    };
+  }, []);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    setIsShowOption(false);
+  };
+
+  return (
+    <div className="w-main bg-white shadow-md">
+      <div className="w-main mx-auto flex justify-between items-center h-[80px] py-[20px]">
+        {/* Logo */}
+        <div>
+          <Link to={`/${path.HOME}`}>
+            <img
+              src={logo}
+              alt="logo"
+              className="max-h-[60px] object-contain object-top"
+            />
+          </Link>
+        </div>
+
+        {/* Cart and Profile */}
+        <div className="flex items-center space-x-6">
+          {/* Cart */}
+          <div className="flex items-center gap-2 cursor-pointer">
+            <FaShoppingCart size={24} color="red" />
+            <span>Items (0)</span>
+          </div>
+
+          {/* Profile */}
+          {current && (
+            <div className="relative">
+              <div
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={() => setIsShowOption((prev) => !prev)}
+              >
+                <FaUserCircle size={24} className="text-red-500 hover:text-gray-500 transition-colors duration-300"/>
+                <span className="capitalize">{current.username}</span>
+              </div>
+
+              {/* Dropdown Options */}
+              {isShowOption && (
+                <div ref={dropdownRef} className="absolute top-full right-0 mt-2 w-[200px] bg-white border rounded-md shadow-lg">
+                  <ul className="flex flex-col">
+                    {/* Admin Workspace */}
+                    {+current.role === 2002 && (
+                      <li>
+                        <Link
+                          to={`${path.ADMIN}/${path.DASHBOARD}`}
+                          className="block px-4 py-2 hover:bg-gray-100"
+                          onClick={() => setIsShowOption(false)}
+                        >
+                          Admin Workspace
+                        </Link>
+                      </li>
+                    )}
+                    {/* Personal */}
+                    <li>
+                      <Link
+                        to={`${path.MEMBER}/${path.PERSONAL}`}
+                        className="block px-4 py-2 hover:bg-gray-100"
+                        onClick={() => setIsShowOption(false)}
+                      >
+                        Personal
+                      </Link>
+                    </li>
+
+                    {/* Logout */}
+                    <li>
+                      <button
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                        onClick={handleLogout}
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              )}
             </div>
-            <Link
-              to={
-                +current?.role === 2002
-                  ? `${path.ADMIN}/${path.DASHBOARD}`
-                  : `${path.MEMBER}/${path.PERSONAL}`
-              }
-              className="flex items-center justify-center px-6 border-r gap-2 cursor-pointer"
-            >
-              <FaUserCircle size={24} color="red"></FaUserCircle>
-              <span>profile</span>
-            </Link>
-          </Fragment>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
